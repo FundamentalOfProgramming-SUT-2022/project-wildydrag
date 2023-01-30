@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/emad/root/cmake-build-debug",
-		"source" : "/home/emad/root"
+		"build" : "/home/emad/root/project-wildydrag/cmake-build-debug",
+		"source" : "/home/emad/root/project-wildydrag"
 	},
 	"version" : 
 	{
