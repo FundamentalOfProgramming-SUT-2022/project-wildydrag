@@ -1,0 +1,3 @@
+in this text file i put my plans for the project
+firstly i need to handle the folder and file creation
+i need a function that creates directories...
