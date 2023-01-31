@@ -10,6 +10,7 @@ int isDirectoryExists(char path[]);
 void createDirectory (char arr[]);
 void isFileExists(char path[]);
 void fileCreator(char arr[]);
+void getStr(char fileName[]);
 
 int counterGlobInsertstr;
 
@@ -90,7 +91,7 @@ void createDirectory (char path[]) {
 void isFileExists(char arr[]) {
     if (access(arr,F_OK) == 0) {
         if (counterGlobInsertstr == 1){
-            //do the necessary operations
+            //do the necessary operations and give file name that is arr.
         }
         else {
             printf("The file already exists!");
@@ -112,3 +113,31 @@ void fileCreator (char arr[]) {
         fclose(fptr);
 }
 
+void getStr(char fileName[]) {
+    char arr[10000];
+    int counter = 0, counter2 = 0, i = 0;
+    char c;
+    while(1) {
+        c = getchar();
+        if (c == ' ' && ++counter == 2) {
+            c = getchar();
+            if (c == '\"' && ++counter2 == 1) {
+                while(1) {
+                    c = getchar();
+                    if (c == '\"' && arr[i - 1] != '\\' && arr[i - 2] != '\\')
+                        break;
+                    arr[i++] = c;
+                }
+                    //call the relevant function and pass array to it.
+            }
+            else {
+                arr[i++] = c;
+                if (c == ' ') {
+                    //call the relevant function and pass array to it.
+                    break;
+                }
+            }
+        }
+    }
+
+}
