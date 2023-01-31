@@ -15,6 +15,7 @@ void insertString(char arr[],char fileName[]);
 
 int counterGlobInsertstr;
 int counterQuotesForStr;
+int counterQuotesForStr2;
 
 int main() {
     char *order = (char *) calloc(20,sizeof(char));
@@ -134,8 +135,6 @@ void createDirectory (char path[]) {
 }
 
 void isFileExists(char fileName[]) { // here if you faced bug it is probably because i changed arr to fileName.
-    printf("%s\n",fileName);
-//    fileName = "hello";
     if (access(fileName,F_OK) == 0) { //it means that it exists
         if (counterGlobInsertstr == 1){
             getStr(fileName);
@@ -165,15 +164,34 @@ void getStr(char fileName[]) {
     int counter = 0, counter2 = 0, i = 0;
     char c;
     while(1) {
-//        printf("khar");
         c = getchar();
-        if (c == ' ' && ++counter == 1) {
+        if (counterQuotesForStr == 0) {
+            counter++;
+        }
+        if (c == ' ' && ++counter == 2) {
             c = getchar();
             if (c == '\"' && ++counter2 == 1) {
                 while(1) {
                     c = getchar();
                     if ((c == '\"' && arr[i - 1] != '\\') || (c == '\"' && arr[i - 1] == '\\' && arr[i - 2] == '\\')) {
+                        counterQuotesForStr2++;
+                    }
+
+                    if (c == '\\' && arr[i - 1] == '\\') {
+                        arr[i - 1] = c;
+                        i--;
+                    }
+                    if (c == 'n' && arr[i - 1] == '\\') {
+                        c = '\n';
+                        arr[i - 1] = c;
+                        i--;
+                    }
+                    if ((c == '\"' && arr[i - 1] != '\\') || (c == '\"' && arr[i - 1] == '\\' && arr[i - 2] == '\\')) {
                         break;
+                    }
+                    if (c == '\"' && arr[i - 1] == '\\') {
+                        arr [i - 1] = c;
+                        i--;
                     }
                     arr[i++] = c;
                 }
@@ -183,6 +201,19 @@ void getStr(char fileName[]) {
                 while(1) {
                     arr[i++] = c;
                     c = getchar();
+                    if (c == '\\' && arr[i - 1] == '\\') {
+                        arr[i - 1] = c;
+                        i--;
+                    }
+                    if (c == 'n' && arr[i - 1] == '\\') {
+                        c = '\n';
+                        arr[i - 1] = c;
+                        i--;
+                    }
+                    if (c == '\"' && arr[i - 1] == '\\') {
+                        arr [i - 1] = c;
+                        i--;
+                    }
                     if (c == ' ') {
                         insertString(arr, fileName);
                         break;
@@ -192,20 +223,22 @@ void getStr(char fileName[]) {
             break; //this break is put here randomly so it may cause some problems.
         }
     }
-
 }
 void insertString(char arr[],char fileName[]) {
     char *size = arr;
-    int row = 0, col = 0;
+    int row = 0, col = 0, counter = 0;
     char c;
     while (1) {
         c = getchar();
-        if (c == ' ') {
+        if (counterQuotesForStr2 == 1) {
+            counter++;
+        }
+        if (c == ' ' && counter != 1) {
             scanf("%d%c%d",&row,&c,&col);
             break;
         }
     }
-//    printf("%d %d",row,col);
+    printf("%d %d",row,col);
     FILE *fp;
     char enter[] = "\n";
     char space[] = " ";
