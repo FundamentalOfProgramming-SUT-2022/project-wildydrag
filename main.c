@@ -12,14 +12,17 @@ void isFileExists(char path[]);
 void fileCreator(char arr[]);
 void getStr(char fileName[]);
 void insertString(char arr[],char fileName[],int len);
-//void catGetFunc(void);
 void catReadFile(char fileName[]);
+//void catGetFunc(void);
+void removeStrPoseSize(char fileName[]);
+void removingTheStr(int col,int row,int size,char flag,char fileName[]);
 
 int counterrGlobCreateFile;
 int counterGlobInsertstr;
 int counterQuotesForStr;
 int counterQuotesForStr2;
 int counterGlobcat;
+int counterGlobRemoveStr;
 
 int main() {
     char *order = (char *) calloc(20,sizeof(char));
@@ -35,6 +38,10 @@ int main() {
     }
     else if (strcmp(order,"cat") == 0) {
         counterGlobcat++;
+        fileGetFunc();
+    }
+    else if (strcmp(order,"removestr") == 0) {
+        counterGlobRemoveStr++;
         fileGetFunc();
     }
 }
@@ -67,7 +74,7 @@ void createfile(void) {
     while (1) {
         c = getchar();
         help[j++] = c;
-        if (counterGlobInsertstr == 1){
+        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1){
             if (counterQuotesForStr == 1) {
                 if ((c != '/' && (((c != '\"' || help[j - 1] == '\\')) && (c != '\"' || help[j - 1] != '\\' || help[j - 2] != '\\')))) {
                     arr[i++] = c;
@@ -158,6 +165,9 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         if (counterGlobInsertstr == 1){
             getStr(fileName);
         }
+        else if (counterGlobRemoveStr == 1) {
+            removeStrPoseSize(fileName);
+        }
         else if (counterGlobcat == 1) {
             catReadFile(fileName);
         }
@@ -165,9 +175,9 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
             printf("The file already exists!");
         }
     }
-    else {
-        if (counterGlobInsertstr == 1)
-            printf("The file doesn't exist");
+    else { //the file doesn't exists
+        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobcat == 1) //i 'm not sure about cat in this condition think about it later on
+            printf("The file doesn't exist"); //later add exit or return 0 after this line of code.
         else
             fileCreator(fileName);
     }
@@ -307,4 +317,112 @@ void catReadFile(char fileName[]) {
         }
     }
     fclose(fp);
+}
+
+void removeStrPoseSize(char fileName[]) {
+    char c;
+    char flag;
+    int row = 0, col = 0, size = 0, counterSpace = 0, counterSpace2 = 0;
+    while (1) {
+        c = getchar();
+        if (counterQuotesForStr == 0 && counterSpace == 0) {
+            counterSpace++;
+        }
+        if (c == ' ') { // also test this part when '\"' comes to the game.
+            counterSpace++;
+        }
+        if (c == ' ' && counterSpace == 2) {
+            scanf("%d%c%d",&row,&c,&col);
+            break;
+        }
+    }
+    while (1) {
+        c = getchar();
+        if (c == ' ') {
+            counterSpace2++;
+        }
+        if (counterSpace2 == 2) {
+            scanf("%d",&size);
+        }
+        if (c == 'b' || c == 'f') {
+            flag = c;
+            break;
+        }
+    }
+    removingTheStr(col,row,size,flag,fileName);
+
+}
+
+void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
+    int counterGeneral = 0;
+    int i = 0, counterRow = 1, counterCol = 0, counterChar = 0;
+    char *temp ="temp.txt"; //this part of code is prone to bug because of pointer and not having .txt.
+    // if there were any bugs you can put char temp[100] as an alternative
+    char c;
+    FILE *original;
+    FILE *del;
+    original = fopen(fileName,"r");
+    del = fopen(temp,"w"); // just a file opened with the w mode
+    if (original == NULL || del == NULL) {
+        printf("unable to open the file");
+    }
+    while (1) {
+        c = fgetc(original);
+        if (c == '\n') {
+            counterRow++;
+            counterChar += counterCol; //This part of code is prone to bug be careful and think more if needed
+            counterCol = 0;
+        }
+        else if(c != '\n' && c != EOF) { //why is it always true? dubious
+            counterCol++;
+        }
+        if (counterCol == col && counterRow == row) {
+            break;
+        }
+
+
+    }
+    rewind(original);
+    while (1) {
+        if (flag == 'f') {
+            while (1) {
+                c = fgetc(original);
+                if (c != EOF) {
+                    fputc(c, del);
+                }//maybe should be beneath the counter++ or beneath the if
+                counterGeneral++;
+                if (counterGeneral == (counterChar) + size) { //may want to add or subtract 1 to or from size
+                    for (int i = 0; i < size; i++) {
+                        c = fgetc(original); //just take the chars we want to remove and as if put them aside
+                    }
+                }
+                if (c == EOF) {
+                    break;
+                }
+            }
+            break; // just put it here be aware not to cause any bugs
+        }
+        else if (flag == 'b') {
+            while (1) {
+                c = fgetc(original);
+                if (c != EOF) {
+                    fputc(c, del);
+                }
+                counterGeneral++;
+                if (counterGeneral == counterChar - 1) {
+                    for (int i = 0; i < size; i++) {
+                        c = fgetc(original);
+                    }
+                }
+                if (c == EOF) {
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    fclose(original);
+    fclose(del);
+    remove(fileName);
+    rename(temp,fileName);
 }
