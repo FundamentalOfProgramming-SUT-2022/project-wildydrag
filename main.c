@@ -12,19 +12,29 @@ void isFileExists(char path[]);
 void fileCreator(char arr[]);
 void getStr(char fileName[]);
 void insertString(char arr[],char fileName[],int len);
+//void catGetFunc(void);
+void catReadFile(char fileName[]);
 
+int counterrGlobCreateFile;
 int counterGlobInsertstr;
 int counterQuotesForStr;
 int counterQuotesForStr2;
+int counterGlobcat;
 
 int main() {
     char *order = (char *) calloc(20,sizeof(char));
     scanf("%s",order);
     if (strcmp(order,"createfile") == 0) {
+        counterrGlobCreateFile++;
         fileGetFunc();
+//        printf("%d\n",counterrGlobCreateFile);
     }
     else if (strcmp(order,"insertstr") == 0) {
         counterGlobInsertstr++;
+        fileGetFunc();
+    }
+    else if (strcmp(order,"cat") == 0) {
+        counterGlobcat++;
         fileGetFunc();
     }
 }
@@ -88,14 +98,14 @@ void createfile(void) {
             }
         }
         else {
-            if (c != '/' && c != '\0' && c != '\"' && c != '\n') {
+            if (c != '/' && c != '\0' && c != '\"' && c != '\n') { //this part of code should be improved.
                 arr[i++] = c;
             }
             else if (c == '/') {
                 isDirectoryExists(arr);
                 break;
             }
-            else if (c == '\0' || c == '\n' || c == '\"') {
+            else if (c == '\0' || c == '\n' || c == '\"') { //this part of code must be improved
                 isFileExists(arr);
                 break;
             }
@@ -121,7 +131,13 @@ void isDirectoryExists(char path[]) {
         createfile();
     }
     else {
-        createDirectory(path);
+        if(counterrGlobCreateFile == 1) {
+            createDirectory(path);
+        }
+        else {
+            printf("the directory doesn't exist");
+        }
+//        printf("%d",counterrGlobCreateFile); //why was it printed 11?
     }
 }
 
@@ -142,7 +158,10 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         if (counterGlobInsertstr == 1){
             getStr(fileName);
         }
-        else {
+        else if (counterGlobcat == 1) {
+            catReadFile(fileName);
+        }
+        else if (counterrGlobCreateFile == 1){
             printf("The file already exists!");
         }
     }
@@ -271,3 +290,21 @@ void insertString(char arr[],char fileName[],int len) {
     fclose(fp);
 }
 
+void catReadFile(char fileName[]) {
+    FILE *fp;
+    char c;
+    fp = fopen(fileName,"r");
+    if (NULL == fp) {
+        printf("The file can't be read");
+    }
+    while(1) {
+        c = fgetc(fp);
+        if (c != EOF) {
+            printf("%c",c);
+        }
+        else {
+            break;
+        }
+    }
+    fclose(fp);
+}
