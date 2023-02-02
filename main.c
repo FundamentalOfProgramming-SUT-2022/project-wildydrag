@@ -24,6 +24,7 @@ int counterQuotesForStr2;
 int counterGlobcat;
 int counterGlobRemoveStr;
 int counterGlobCopyStr;
+int counterGlobCutStr;
 
 int main() {
     char *order = (char *) calloc(20,sizeof(char));
@@ -47,6 +48,10 @@ int main() {
     }
     else if (strcmp(order,"copystr") == 0) {
         counterGlobCopyStr++;
+        fileGetFunc();
+    }
+    else if(strcmp(order,"cutstr") == 0) {
+        counterGlobCutStr++;
         fileGetFunc();
     }
 }
@@ -79,7 +84,8 @@ void createfile(void) {
     while (1) {
         c = getchar();
         help[j++] = c;
-        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobCopyStr == 1){ //this part should be considered if after the address we still take command
+        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobCopyStr == 1
+            || counterGlobCutStr == 1){ //this part should be considered if after the address we still take command
             if (counterQuotesForStr == 1) {
                 if ((c != '/' && (((c != '\"' || help[j - 1] == '\\')) && (c != '\"' || help[j - 1] != '\\' || help[j - 2] != '\\')))) {
                     arr[i++] = c;
@@ -170,7 +176,8 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         if (counterGlobInsertstr == 1){
             getStr(fileName);
         }
-        else if (counterGlobRemoveStr == 1 || counterGlobCopyStr == 1) {
+        else if (counterGlobRemoveStr == 1 || counterGlobCopyStr == 1 ||
+                 counterGlobCutStr == 1) {
             removeStrPoseSize(fileName);
         }
         else if (counterGlobcat == 1) {
@@ -181,7 +188,8 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         }
     }
     else { //the file doesn't exists
-        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobcat == 1) //i 'm not sure about cat in this condition think about it later on
+        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobcat == 1 ||
+            counterGlobCopyStr == 1 || counterGlobCutStr == 1) //i 'm not sure about cat in this condition think about it later on
             printf("The file doesn't exist"); //later add exit or return 0 after this line of code.
         else
             fileCreator(fileName);
@@ -361,14 +369,18 @@ void removeStrPoseSize(char fileName[]) {
 void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
 //    printf("the row valus is: %d\n",row);
     int counterGeneral = 0;
+    int counterGeneral2 = 0;
     int j = 0, counterRow = 1, counterCol = 0, counterChar = 0;
-    char *temp =".temp.txt";
+    char *temp ="temp.txt";
+    char *duplicate =".copy.txt";
     // if there were any bugs you can put char temp[100] as an alternative
     char c;
     FILE *original;
     FILE *del;
+    FILE *copy;
     original = fopen(fileName,"r");
     del = fopen(temp,"w"); // just a file opened with the w mode
+    copy = fopen(duplicate,"w");
     if (original == NULL || del == NULL) {
         printf("unable to open the file");
     }
@@ -407,128 +419,154 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
 //    fseek(original,0,SEEK_END);
 //    printf("%ld\n",ftell(original));
 //    rewind(original);
-//    printf("inja miad\n");
+    printf("inja miad\n");
     while (1) {
 //        printf("miyad");
+//        printf("inja miad");
         if (flag == 'f') {
 //            printf("inja miad");
             while (1) {
-                c = fgetc(original);
-                if (counterGlobRemoveStr == 1){
-                    if (counterChar == 0) {
-                        counterGeneral--;
-                    }
-                    counterGeneral++;
-                    if (counterGeneral == (counterChar)) {//may want to add or subtract 1 to or from size
-                        if ((counterChar != 0) && (c != EOF)) {
-                            fputc(c,del);
+                if (counterGlobCopyStr == 1 || counterGlobCutStr == 1) {
+                    while (1) {
+                        c = fgetc(original);
+                        if (counterChar == 0) {
+                            counterGeneral--;
                         }
-                        for (int i = 0; i < size; i++) {
-                            c = fgetc(original); //just take the chars we want to remove and as if put them aside
-                            counterGeneral++;
+                        counterGeneral++;
+                        if (counterGeneral == counterChar) {
+                            if (counterChar == 0 && c != EOF) {
+                                fputc(c, copy);
+                            }
+                            for (int i = 0; i < size; i++) {
+                                c = fgetc(original);
+                                fputc(c, copy);
+                            }
+                            rewind(original);
+                            break;
                         }
-                    }
-                    else if (c != EOF) {
-                        fputc(c, del);
-                    }//maybe should be beneath the counter++ or beneath the if
-                    else if (c == EOF) {
-                        break;
+                        else if (c == EOF) { //may cause bugs in that case put if
+                            printf("the line position doesn't exist");
+                            rewind(original);
+                            break;
+                        }
                     }
                 }
-                else if (counterGlobCopyStr == 1) {
-                    if (counterChar == 0) {
-                        counterGeneral--;
-                    }
-                    counterGeneral++;
-                    if (counterGeneral == counterChar) {
-                        if (counterChar == 0 && c != EOF) {
-                            fputc(c,del);
+                if (counterGlobCopyStr == 1 && counterGlobCutStr == 0) {
+                    break;
+                }
+                if (counterGlobRemoveStr == 1 || counterGlobCutStr == 1){
+                    while(1) {
+                        c = fgetc(original);
+                        if (counterChar == 0) {
+                            counterGeneral2--;
                         }
-                        for (int i = 0; i < size; i++) {
-                            c = fgetc(original);
+                        counterGeneral2++;
+                        if (counterGeneral2 == (counterChar)) {//may want to add or subtract 1 to or from size
+                            if ((counterChar != 0) && (c != EOF)) {
+                                fputc(c, del);
+                            }
+                            for (int i = 0; i < size; i++) {
+                                c = fgetc(original); //just take the chars we want to remove and as if put them aside
+                                counterGeneral2++;
+                            }
+                        } else if (c != EOF) {
                             fputc(c, del);
+                        }//maybe should be beneath the counter++ or beneath the if
+                        else if (c == EOF) {
+                            break;
                         }
-                        break;
-                    }
-                    else if (c == EOF) {
-                        printf("the line position doesn't exist");
-                        break;
                     }
                 }
+                break;
             }
             break; // just put it here be aware not to cause any bugs
         }
         else if (flag == 'b') {
+//            printf("inja miad");
             while (1) {
-                c = fgetc(original);
-                if (counterGlobRemoveStr == 1) {
-                    if (counterChar < size) {
-                        int static counter2 = 0;
-                        counter2++;
-                        if (counter2 == 1) {
-                            printf("you want to delete more than availabe characters!");
-                        }
-                    }
-                    else if (counterChar >= size) {
-                        counterGeneral++;
-                        if (counterChar == size) {
-                            counterGeneral--;
-                        }
-                    }
-                    if (counterGeneral == counterChar - size) {
-                        if ((counterChar - size) != 0 && (c != EOF)) {
-                            fputc(c, del);
-                        }
-                        for (int i = 0; i < size; i++) {
-                            c = fgetc(original);
+//                printf("inja miad");
+                if(counterGlobCopyStr == 1 || counterGlobCutStr == 1) {
+//                    printf("inja miad");
+                    while(1) {
+                        c = fgetc(original);
+                        printf("infinite loop");
+                        if (counterChar < size) {
+                            int static counter = 0;
+                            counter++;
+                            if (counter == 1) {
+                                printf("you want to copy more than existed characters backward");
+                            }
+                        } else if (counterChar >= size) {
                             counterGeneral++;
+                            if (counterChar == size) {
+                                counterGeneral--;
+                            }
                         }
-                    }
-                    else if (c != EOF) {
-                        fputc(c, del);
-                    }
-                    else if (c == EOF) {
-                        break;
-                    }
-                }
-                else if(counterGlobCopyStr == 1) {
-                    if (counterChar < size) {
-                        int static counter = 0;
-                        counter++;
-                        if (counter == 1) {
-                            printf("you want to copy more than existed characters backward");
-                        }
-                    }
-                    else if (counterChar >= size) {
-                        counterGeneral++;
-                        if (counterChar == size) {
-                            counterGeneral--;
-                        }
-                    }
-                    if (counterGeneral == counterChar - size){
-                        if((counterChar - size) == 0 && (c != EOF)) {
-                            fputc(c,del);
-                        }
-                        for (int i = 0; i < size; i++) {
-                            c = fgetc(original);
-                            fputc(c,del);
+                        if (counterGeneral == counterChar - size) {
+                            if ((counterChar - size) == 0 && (c != EOF)) {
+                                fputc(c, copy);
+                            }
+                            for (int i = 0; i < size; i++) {
+                                c = fgetc(original);
+                                fputc(c, copy);
 //                            counterGeneral++; //i'm not sure whether this part of code is required or not.
+                            }
+                            rewind(original);
+                            break;
                         }
-                        break;
-                    }
-                    else if(c == EOF) {
-                        printf("the line position doesn't exist");
-                        break;
+                        else if (c == EOF) { //may cause some bugs.
+                            printf("the line position doesn't exist");
+                            rewind(original);
+                            break;
+                        }
                     }
                 }
+                if (counterGlobCopyStr == 1 && counterGlobCutStr == 0){
+                    break;
+                }
+                if (counterGlobRemoveStr == 1 || counterGlobCutStr == 1) {
+                    while(1) {
+                        c = fgetc(original);
+                        if (counterChar < size) {
+                            int static counter2 = 0;
+                            counter2++;
+                            if (counter2 == 1) {
+                                printf("you want to delete more than availabe characters!");
+                            }
+                        } else if (counterChar >= size) {
+                            counterGeneral2++;
+                            if (counterChar == size) {
+                                counterGeneral2--;
+                            }
+                        }
+                        if (counterGeneral2 == counterChar - size) {
+                            if ((counterChar - size) != 0 && (c != EOF)) {
+                                fputc(c, del);
+                            }
+                            for (int i = 0; i < size; i++) {
+                                c = fgetc(original);
+                                counterGeneral2++;
+                            }
+                        } else if (c != EOF) {
+                            fputc(c, del);
+                        } else if (c == EOF) {
+                            break;
+                        }
+                    }
+                }
+                break;
             }
             break;
         }
+//        break;
     }
     fclose(original);
     fclose(del);
-    if (counterGlobRemoveStr == 1) {
+    fclose(copy);
+    if (counterGlobRemoveStr == 1 || counterGlobCutStr == 1) {
         remove(fileName);
         rename(temp, fileName);
     }
 }
+
+
