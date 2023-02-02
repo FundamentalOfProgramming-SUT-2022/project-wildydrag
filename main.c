@@ -14,7 +14,7 @@ void getStr(char fileName[]);
 void insertString(char arr[],char fileName[],int len);
 void catReadFile(char fileName[]);
 //void catGetFunc(void);
-void removeStrPoseSize(char fileName[]);
+void removeStrPoseSize(char fileName[]); //this function is also used for copystr
 void removingTheStr(int col,int row,int size,char flag,char fileName[]);
 
 int counterrGlobCreateFile;
@@ -23,6 +23,7 @@ int counterQuotesForStr;
 int counterQuotesForStr2;
 int counterGlobcat;
 int counterGlobRemoveStr;
+int counterGlobCopyStr;
 
 int main() {
     char *order = (char *) calloc(20,sizeof(char));
@@ -42,6 +43,10 @@ int main() {
     }
     else if (strcmp(order,"removestr") == 0) {
         counterGlobRemoveStr++;
+        fileGetFunc();
+    }
+    else if (strcmp(order,"copystr") == 0) {
+        counterGlobCopyStr++;
         fileGetFunc();
     }
 }
@@ -74,7 +79,7 @@ void createfile(void) {
     while (1) {
         c = getchar();
         help[j++] = c;
-        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1){
+        if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobCopyStr == 1){ //this part should be considered if after the address we still take command
             if (counterQuotesForStr == 1) {
                 if ((c != '/' && (((c != '\"' || help[j - 1] == '\\')) && (c != '\"' || help[j - 1] != '\\' || help[j - 2] != '\\')))) {
                     arr[i++] = c;
@@ -132,7 +137,7 @@ void isDirectoryExists(char path[]) {
 
     stat(path,&stats);
 
-    if(S_ISDIR(stats.st_mode)) {
+    if(S_ISDIR(stats.st_mode)) { //it means that the directory exists.
         char *dirName = path;
         chdir(dirName);
         createfile();
@@ -165,7 +170,7 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         if (counterGlobInsertstr == 1){
             getStr(fileName);
         }
-        else if (counterGlobRemoveStr == 1) {
+        else if (counterGlobRemoveStr == 1 || counterGlobCopyStr == 1) {
             removeStrPoseSize(fileName);
         }
         else if (counterGlobcat == 1) {
@@ -349,15 +354,15 @@ void removeStrPoseSize(char fileName[]) {
             break;
         }
     }
-    removingTheStr(col,row,size,flag,fileName);
+    removingTheStr(col,row,size,flag,fileName); //it also works for copystr
 
 }
 
 void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
-    printf("the row valus is: %d\n",row);
+//    printf("the row valus is: %d\n",row);
     int counterGeneral = 0;
     int j = 0, counterRow = 1, counterCol = 0, counterChar = 0;
-    char *temp ="temp.txt"; //this part of code is prone to bug because of pointer and not having .txt.
+    char *temp =".temp.txt";
     // if there were any bugs you can put char temp[100] as an alternative
     char c;
     FILE *original;
@@ -402,32 +407,50 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
 //    fseek(original,0,SEEK_END);
 //    printf("%ld\n",ftell(original));
 //    rewind(original);
-    printf("inja miad\n");
+//    printf("inja miad\n");
     while (1) {
 //        printf("miyad");
         if (flag == 'f') {
 //            printf("inja miad");
             while (1) {
                 c = fgetc(original);
-
-                if (counterChar == 0) {
-                    counterGeneral--;
-                }
-                counterGeneral++;
-                if (counterGeneral == (counterChar)) {//may want to add or subtract 1 to or from size
-                    if ((counterChar != 0) && (c != EOF)) {
-                        fputc(c,del);
+                if (counterGlobRemoveStr == 1){
+                    if (counterChar == 0) {
+                        counterGeneral--;
                     }
-                    for (int i = 0; i < size; i++) {
-                        c = fgetc(original); //just take the chars we want to remove and as if put them aside
-                        counterGeneral++;
+                    counterGeneral++;
+                    if (counterGeneral == (counterChar)) {//may want to add or subtract 1 to or from size
+                        if ((counterChar != 0) && (c != EOF)) {
+                            fputc(c,del);
+                        }
+                        for (int i = 0; i < size; i++) {
+                            c = fgetc(original); //just take the chars we want to remove and as if put them aside
+                            counterGeneral++;
+                        }
+                    }
+                    else if (c != EOF) {
+                        fputc(c, del);
+                    }//maybe should be beneath the counter++ or beneath the if
+                    else if (c == EOF) {
+                        break;
                     }
                 }
-                else if (c != EOF) {
-                    fputc(c, del);
-                }//maybe should be beneath the counter++ or beneath the if
-                else if (c == EOF) {
-                    break;
+                else if (counterGlobCopyStr == 1) {
+                    if (counterChar == 0) {
+                        counterGeneral--;
+                    }
+                    counterGeneral++;
+                    if (counterGeneral == counterChar) {
+                        for (int i = 0; i < size; i++) {
+                            c = fgetc(original);
+                            fputc(c, del);
+                        }
+                        break;
+                    }
+                    else if (c == EOF) {
+                        printf("the line position doesn't exist");
+                        break;
+                    }
                 }
             }
             break; // just put it here be aware not to cause any bugs
@@ -435,29 +458,54 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
         else if (flag == 'b') {
             while (1) {
                 c = fgetc(original);
-                if (counterChar < size) {
-                    printf("you want to delete more than availabe characters!");
-                }
-                else if (counterChar >= size) {
-                    counterGeneral++;
-                    if (counterChar == size) {
-                        counterGeneral--;
+                if (counterGlobRemoveStr == 1) {
+                    if (counterChar < size) {
+                        printf("you want to delete more than availabe characters!");
                     }
-                }
-                if (counterGeneral == counterChar - size) {
-                    if ((counterChar - size) != 0 && (c != EOF)) {
-                        fputc(c,del);
-                    }
-                    for (int i = 0; i < size; i++) {
-                        c = fgetc(original);
+                    else if (counterChar >= size) {
                         counterGeneral++;
+                        if (counterChar == size) {
+                            counterGeneral--;
+                        }
+                    }
+                    if (counterGeneral == counterChar - size) {
+                        if ((counterChar - size) != 0 && (c != EOF)) {
+                            fputc(c, del);
+                        }
+                        for (int i = 0; i < size; i++) {
+                            c = fgetc(original);
+                            counterGeneral++;
+                        }
+                    }
+                    else if (c != EOF) {
+                        fputc(c, del);
+                    }
+                    else if (c == EOF) {
+                        break;
                     }
                 }
-                else if (c != EOF) {
-                    fputc(c, del);
-                }
-                else if (c == EOF) {
-                    break;
+                else if(counterGlobCopyStr == 1) {
+                    if (counterChar < size) {
+                        printf("you want to copy more than existed characters backward");
+                    }
+                    else if (counterChar >= size) {
+                        counterGeneral++;
+                        if (counterChar == size) {
+                            counterGeneral--;
+                        }
+                    }
+                    if (counterGeneral == counterChar - size){
+                        for (int i = 0; i < size; i++) {
+                            c = fgetc(original);
+                            fputc(c,del);
+//                            counterGeneral++; //i'm not sure whether this part of code is required or not.
+                        }
+                        break;
+                    }
+                    else if(c == EOF) {
+                        printf("the line position doesn't exist");
+                        break;
+                    }
                 }
             }
             break;
@@ -465,6 +513,8 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
     }
     fclose(original);
     fclose(del);
-    remove(fileName);
-    rename(temp,fileName);
+    if (counterGlobRemoveStr == 1) {
+        remove(fileName);
+        rename(temp, fileName);
+    }
 }
