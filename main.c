@@ -354,8 +354,9 @@ void removeStrPoseSize(char fileName[]) {
 }
 
 void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
+    printf("the row valus is: %d\n",row);
     int counterGeneral = 0;
-    int i = 0, counterRow = 1, counterCol = 0, counterChar = 0;
+    int j = 0, counterRow = 1, counterCol = 0, counterChar = 0;
     char *temp ="temp.txt"; //this part of code is prone to bug because of pointer and not having .txt.
     // if there were any bugs you can put char temp[100] as an alternative
     char c;
@@ -369,34 +370,63 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
     while (1) {
         c = fgetc(original);
         if (c == '\n') {
+            counterCol++;
             counterRow++;
-            counterChar += counterCol; //This part of code is prone to bug be careful and think more if needed
+            counterChar += counterCol;//This part of code is prone to bug be careful and think more if needed
+//            printf("%d\n",counterChar);
+//            printf("%d\n",counterRow);
             counterCol = 0;
         }
         else if(c != '\n' && c != EOF) { //why is it always true? dubious
             counterCol++;
+//            printf("%d ",counterCol);
         }
-        if (counterCol == col && counterRow == row) {
-            break;
+        if (col != 0) {
+            if (counterCol == col && counterRow == row) {
+                counterChar += col;
+//                printf("inja miyad");
+                break;
+            }
         }
+        else if (col == 0) {
+            if(counterRow == row) {
+//                printf("%d\n",counterChar);
+                break;
+            }
+        }
+
 
 
     }
     rewind(original);
+//    fseek(original,0,SEEK_END);
+//    printf("%ld\n",ftell(original));
+//    rewind(original);
+    printf("inja miad\n");
     while (1) {
+//        printf("miyad");
         if (flag == 'f') {
+//            printf("inja miad");
             while (1) {
                 c = fgetc(original);
-                if (c != EOF) {
-                    fputc(c, del);
-                }//maybe should be beneath the counter++ or beneath the if
+
+                if (counterChar == 0) {
+                    counterGeneral--;
+                }
                 counterGeneral++;
-                if (counterGeneral == (counterChar) + size) { //may want to add or subtract 1 to or from size
+                if (counterGeneral == (counterChar)) {//may want to add or subtract 1 to or from size
+                    if ((counterChar != 0) && (c != EOF)) {
+                        fputc(c,del);
+                    }
                     for (int i = 0; i < size; i++) {
                         c = fgetc(original); //just take the chars we want to remove and as if put them aside
+                        counterGeneral++;
                     }
                 }
-                if (c == EOF) {
+                else if (c != EOF) {
+                    fputc(c, del);
+                }//maybe should be beneath the counter++ or beneath the if
+                else if (c == EOF) {
                     break;
                 }
             }
@@ -405,16 +435,28 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
         else if (flag == 'b') {
             while (1) {
                 c = fgetc(original);
-                if (c != EOF) {
-                    fputc(c, del);
+                if (counterChar < size) {
+                    printf("you want to delete more than availabe characters!");
                 }
-                counterGeneral++;
-                if (counterGeneral == counterChar - 1) {
-                    for (int i = 0; i < size; i++) {
-                        c = fgetc(original);
+                else if (counterChar >= size) {
+                    counterGeneral++;
+                    if (counterChar == size) {
+                        counterGeneral--;
                     }
                 }
-                if (c == EOF) {
+                if (counterGeneral == counterChar - size) {
+                    if ((counterChar - size) != 0 && (c != EOF)) {
+                        fputc(c,del);
+                    }
+                    for (int i = 0; i < size; i++) {
+                        c = fgetc(original);
+                        counterGeneral++;
+                    }
+                }
+                else if (c != EOF) {
+                    fputc(c, del);
+                }
+                else if (c == EOF) {
                     break;
                 }
             }
