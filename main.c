@@ -284,6 +284,7 @@ void getStr(char fileName[]) {
 }
 void insertString(char arr[],char fileName[],int len) {
     char *size = arr;
+    int counterRow = 1, counterCol = 0, counterChar = 0;
     int row = 0, col = 0, counter = 0;
     char c;
     while (1) {
@@ -292,25 +293,77 @@ void insertString(char arr[],char fileName[],int len) {
             counter++;
         }
         if (c == ' ' && counter != 1) {
-            scanf("%d%c%d",&row,&c,&col);
+            scanf("%d%c%d", &row, &c, &col);
             break;
         }
     }
-//    printf("%d %d",row,col);
-    FILE *fp;
-    char enter[] = "\n";
-    char space[] = " ";
-    fp = fopen(fileName,"w");
-    for (int i = 0; i < row; i++) {
-        fwrite(enter,1,sizeof(enter),fp);
+
+    char *temp = "temp.txt";
+    FILE *original;
+    FILE *insert;
+    original = fopen(fileName, "r");
+    insert = fopen(temp, "w");
+    if (original == NULL || insert == NULL) {
+        printf("unable to open the file");
     }
-    for (int i = 0; i < col; i++) {
-        fwrite(space,1,sizeof(space),fp);
+
+    while (1) {
+        c = fgetc(original);
+        if (c == '\n') {
+            counterCol++;
+            if (counterRow == row && col > counterRow){
+                printf("Out of index"); // you have to implement this part of code to
+                exit(0);                 //similar parts as well.
+            }
+            counterRow++;
+            counterChar += counterCol;
+            counterCol = 0;
+        }
+        if (counterRow < row) {
+            printf("out of index");
+            exit(0);
+        }
+        else if (c != '\n' && c != EOF) {
+            counterCol++;
+        }
+        if (col != 0) {
+            if (counterCol == col && counterRow == row) {
+                counterChar += col;
+//                printf("inja miyad");
+                break;
+            }
+        }
+        else if (col == 0) {
+            if (counterRow == row) {
+                break;
+            }
+        }
     }
-    fclose(fp);
-    fp = fopen(fileName,"a");
-    fwrite(size,1,len,fp);
-    fclose(fp);
+    rewind(original);
+    int counterGeneral = 0;
+    while(1) {
+        c = fgetc(original);
+        if (counterChar == 0) {
+            counterGeneral--;
+        }
+        counterGeneral++;
+        if (counterGeneral == counterChar) {
+            fputc(c,insert);
+            for (int i = 0; i < len; i++) {
+                fputc(arr[i],insert);
+                counterGeneral++;
+            }
+            c = fgetc(original);
+        }
+        if (c == EOF) {
+            break;
+        }
+        fputc(c,insert);
+    }
+    fclose(original);
+    fclose(insert);
+    remove(original);
+    rename(temp,fileName);
 }
 
 void catReadFile(char fileName[]) {
