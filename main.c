@@ -441,6 +441,9 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
                     }
                     counterGeneral++;
                     if (counterGeneral == counterChar) {
+                        if (counterChar == 0 && c != EOF) {
+                            fputc(c,del);
+                        }
                         for (int i = 0; i < size; i++) {
                             c = fgetc(original);
                             fputc(c, del);
@@ -460,7 +463,11 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
                 c = fgetc(original);
                 if (counterGlobRemoveStr == 1) {
                     if (counterChar < size) {
-                        printf("you want to delete more than availabe characters!");
+                        int static counter2 = 0;
+                        counter2++;
+                        if (counter2 == 1) {
+                            printf("you want to delete more than availabe characters!");
+                        }
                     }
                     else if (counterChar >= size) {
                         counterGeneral++;
@@ -486,7 +493,11 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
                 }
                 else if(counterGlobCopyStr == 1) {
                     if (counterChar < size) {
-                        printf("you want to copy more than existed characters backward");
+                        int static counter = 0;
+                        counter++;
+                        if (counter == 1) {
+                            printf("you want to copy more than existed characters backward");
+                        }
                     }
                     else if (counterChar >= size) {
                         counterGeneral++;
@@ -495,6 +506,9 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
                         }
                     }
                     if (counterGeneral == counterChar - size){
+                        if((counterChar - size) == 0 && (c != EOF)) {
+                            fputc(c,del);
+                        }
                         for (int i = 0; i < size; i++) {
                             c = fgetc(original);
                             fputc(c,del);
