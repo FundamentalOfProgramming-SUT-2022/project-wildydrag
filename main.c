@@ -17,6 +17,9 @@ void catReadFile(char fileName[]);
 void removeStrPoseSize(char fileName[]); //this function is also used for copystr
 void removingTheStr(int col,int row,int size,char flag,char fileName[]);
 void pasteStr(int ,int,char fileName[]);
+void getFuncFind (void);
+void getFindTags(char fileName[]);
+int findStrFunc(char fileName[]);
 
 int counterrGlobCreateFile;
 int counterGlobInsertstr;
@@ -28,6 +31,14 @@ int counterGlobCopyStr;
 int counterGlobCutStr;
 int counterGlobPaste;
 int counterGlobForPasteSize;
+int counterGlobFind;
+int counterSpecialSpace;
+int counterIndexStar;
+char strToBeFound[10000];
+char *strFindTag[2];
+int sizeOf_at;
+int counterNotIndex;
+
 
 int main() {
 //    printf("inja miad");
@@ -63,6 +74,10 @@ int main() {
         counterGlobPaste++;
         fileGetFunc();
     }
+    else if(strcmp(order,"find") == 0) {
+        counterGlobFind++;
+        fileGetFunc();
+    }
 }
 
 void fileGetFunc() {
@@ -95,7 +110,8 @@ void createfile(void) {
         c = getchar();
         help[j++] = c;
         if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobCopyStr == 1
-            || counterGlobCutStr == 1 || counterGlobPaste == 1){ //this part should be considered if after the address we still take command
+            || counterGlobCutStr == 1 || counterGlobPaste == 1 || counterrGlobCreateFile == 1
+            || counterGlobFind == 1){ //this part should be considered if after the address we still take command
             if (counterQuotesForStr == 1) {
                 if ((c != '/' && (((c != '\"' || help[j - 1] == '\\')) && (c != '\"' || help[j - 1] != '\\' || help[j - 2] != '\\')))) {
                     arr[i++] = c;
@@ -187,6 +203,9 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
         if (counterGlobInsertstr == 1){
             getStr(fileName);
         }
+        if (counterGlobFind == 1) {
+            getFindTags(fileName);
+        }
         else if (counterGlobRemoveStr == 1 || counterGlobCopyStr == 1 ||
                  counterGlobCutStr == 1 || counterGlobPaste == 1) {
 //            printf("inja miad");
@@ -201,7 +220,8 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
     }
     else { //the file doesn't exists
         if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobcat == 1 ||
-            counterGlobCopyStr == 1 || counterGlobCutStr == 1 || counterGlobPaste == 1) //i 'm not sure about cat in this condition think about it later on
+            counterGlobCopyStr == 1 || counterGlobCutStr == 1 || counterGlobPaste == 1 ||
+            counterGlobFind == 1) //i 'm not sure about cat in this condition think about it later on
             printf("The file doesn't exist"); //later add exit or return 0 after this line of code.
         else
             fileCreator(fileName);
@@ -756,5 +776,211 @@ void pasteStr(int col,int row,char fileName[]) {
     rename(temp,fileName);
 }
 
+void getFuncFind () {
+    int counterSpace = 0, i = 0, counterNumberOfStars = 0;
+    char c;
+    while (1) {
+        c = getchar();
+        if (c == ' ') {
+            counterSpace++;
+        }
+        if (counterSpace == 2) {
+            c = getchar();
+            if (c == '\"') {
+                while (1) {
+                    c = getchar();
+                    if (c == ' ') {
+                        counterSpecialSpace++; //global use
+
+                    }
+                    if( (c == '\"' && strToBeFound[i - 1] != '\\') || (c == '\"'
+                                                                       && strToBeFound[i - 1] == '\\' && strToBeFound[i - 2] == '\\')) {
+                        break;
+                    }
+                    else {
+                        strToBeFound[i++] = c;
+                    }
+                    if (counterNumberOfStars < 1) {
+                        if (c == '*' && strToBeFound[i - 2] != '\\') {
+                            counterNumberOfStars++;
+                            counterIndexStar += --i;
+                            counterNotIndex++;
+
+                        }
+                    }
+
+                }
+            }
+            else {
+                while(1) {
+                    strToBeFound[i++] = c;
+                    c = getchar();
+                    if (c == ' ') {
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    fileGetFunc();
+}
+
+void getFindTags (char fileName[]) {
+    char c;
+    int i = 0, z = 0, spacecounter = 0, counterL = 0;
+    char help[30];
+    while (1) {
+        c = getchar();
+        help[z++] = c;
+        if (c == 'a') {
+            c == getchar();
+        }
+        if (c == ' ') {
+            spacecounter++;
+            c = getchar();
+            if (c != '-' || c == '\0' || c == '\n') {
+                break;
+            }
+            else {
+                c = getchar();
+            }
+        }
+        switch (c) {
+            case 'b':
+                strFindTag[i++] = "byword";
+                break;
+            case 't': {
+                if (help[z - 2] != 'n') {
+                    strFindTag[i++] = "at";
+                    while (1) {
+                        c = getchar();
+                        scanf("%d", &sizeOf_at);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 'l':
+                counterL++;
+                if (counterL == 1) {
+                    strFindTag[i++] = "all";
+                }
+                break;
+            case 'c':
+                strFindTag[i++] = "count";
+                break;
+            default:
+                break;
+        }
+        if (i > 2) {
+            printf("logical error");
+            exit(1);
+        }
+        if (c == '\0' || c == '\n') {
+            break;
+        }
+    }
+    int l = 0;
+    if (*(*strFindTag + l) =='c' && *(*(strFindTag + 1) + l ) != '\0') {
+        printf("you can not give this input");
+    }
+    if (*(*strFindTag + l) == 'a' && *(*(strFindTag + 1) + l) == 'a') {
+        printf("you can't give this input");
+    }
+
+}
+
+int findStrFunc(char fileName[]) {
+    char buffer[100000];
+    int countwords = 0, starcondition = 0, counterGeneral = 0;  //shows the position of the cursor
+    int counterEntranceWhile = 0, len = 0;
+    int originalcount = 0; //used for count attribute
+    char c;
+    int l = 0;
+    int n = 0, i = 0, m = 0, j = 0;
+    FILE *find;
+    find = fopen(fileName, "r");
+    m = strlen(strToBeFound); // it may have bugs be aware
+    while (1) {
+        if (fgets(buffer, 100000, find) == NULL) {
+            printf("not found!");
+            return 1;
+        }
+        n = strlen(buffer);
+
+        while (i < n) {
+            counterEntranceWhile == 0;
+            j = 0;
+            starcondition = 1;
+            while (starcondition) {
+                counterEntranceWhile++;
+                starcondition = (i < n && j < m && buffer[i++] == strToBeFound[j++]);
+                if (starcondition == 0 && counterEntranceWhile == 1) {
+                    break;
+                }
+                if (buffer[i - 1] == ' ') {
+                    countwords++;
+                }
+                counterGeneral++; //maybe static i donno
+            }
+            if (counterNotIndex != 0) {
+                if (counterIndexStar == --j && counterSpecialSpace == 0) {
+                    if (buffer[i - 1] != ' ' && buffer[i - 1] != EOF &&
+                        buffer[i - 1] != '\0') {
+                        starcondition = 1;
+                    }
+                } else if (counterIndexStar == --j && counterSpecialSpace != 0) {
+                    // this part of code needs to be thought carefully
+                }
+
+            }
+            if (j == m) {
+                originalcount++;
+                if (*(*strFindTag + l) == 'b' || *(*(strFindTag + 1) + l) == 'b') {
+                    printf("%d", countwords); //it is okay because it is first occurence
+                    exit(0); //the countWords my be add or min to one
+                } else if (*(*strFindTag + l) == 'a' && *(*strFindTag + ++l) == 't') {
+                    if (originalcount == sizeOf_at) {
+                        printf("%d", counterGeneral);
+                    } else if (sizeOf_at > originalcount) {
+                        printf("number of finding is less than at's number");
+                        exit(1); //it must return one
+                    }
+                } else if (*(*strFindTag + l) == 'a' && *(*strFindTag + ++l) == 'l') {
+                    printf("%d ", counterGeneral);
+
+                } else if (
+                        (*(*strFindTag + l) == 'a' && *(*strFindTag + ++l) == 'l' && *(*(strFindTag + 1) + --l) == 'b')
+                        || *(*strFindTag + l) == 'b' && *(*(strFindTag + 1) + --l) == 'a' &&
+                           *(*(strFindTag + 1) + ++l) == 'l') {
+                    printf("%d ", countwords);
+                } else if (
+                        (*(*strFindTag + l) == 'a' && *(*strFindTag + ++l) == 't' && *(*(strFindTag + 1) + --l) == 'b')
+                        || *(*strFindTag + l) == 'b' && *(*(strFindTag + 1) + --l) == 'a' &&
+                           *(*(strFindTag + 1) + ++l) == 't') {
+                    if (originalcount == sizeOf_at) {
+                        printf("%d", countwords);
+                    }
+                } else if (*(*strFindTag + l) == '\0' && *(*(strFindTag + 1) + l) == '\0') {
+                    printf("%d", counterGeneral);
+                    exit(0);
+                }
 
 
+            }
+            while (i < n && buffer[i] != ' ') {
+                ++i;
+            }
+            ++i;
+
+        }
+
+    }
+    if (*(*strFindTag + l) =='c') {
+        printf("%d",originalcount);
+    }
+    fclose(find);
+
+
+}
