@@ -16,6 +16,7 @@ void catReadFile(char fileName[]);
 //void catGetFunc(void);
 void removeStrPoseSize(char fileName[]); //this function is also used for copystr
 void removingTheStr(int col,int row,int size,char flag,char fileName[]);
+void pasteStr(int ,int,char fileName[]);
 
 int counterrGlobCreateFile;
 int counterGlobInsertstr;
@@ -25,8 +26,11 @@ int counterGlobcat;
 int counterGlobRemoveStr;
 int counterGlobCopyStr;
 int counterGlobCutStr;
+int counterGlobPaste;
+int counterGlobForPasteSize;
 
 int main() {
+//    printf("inja miad");
     char *order = (char *) calloc(20,sizeof(char));
     scanf("%s",order);
     if (strcmp(order,"createfile") == 0) {
@@ -54,9 +58,15 @@ int main() {
         counterGlobCutStr++;
         fileGetFunc();
     }
+    else if(strcmp(order,"pastestr") == 0) {
+//        printf("inja miad");
+        counterGlobPaste++;
+        fileGetFunc();
+    }
 }
 
 void fileGetFunc() {
+//    printf("inja miad");
     char c;
     int counter = 0;
     while (1) {
@@ -75,7 +85,7 @@ void fileGetFunc() {
 }
 
 void createfile(void) {
-
+//    printf("inja miad");
     char arr[100] = {0};
     char help[100] = {0};
     int counter = 0;
@@ -85,7 +95,7 @@ void createfile(void) {
         c = getchar();
         help[j++] = c;
         if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobCopyStr == 1
-            || counterGlobCutStr == 1){ //this part should be considered if after the address we still take command
+            || counterGlobCutStr == 1 || counterGlobPaste == 1){ //this part should be considered if after the address we still take command
             if (counterQuotesForStr == 1) {
                 if ((c != '/' && (((c != '\"' || help[j - 1] == '\\')) && (c != '\"' || help[j - 1] != '\\' || help[j - 2] != '\\')))) {
                     arr[i++] = c;
@@ -170,6 +180,7 @@ void createDirectory (char path[]) {
 
 void isFileExists(char fileName[]) { // here if you faced bug it is probably because i changed arr to fileName.
 //    printf("%s",fileName);
+//    printf("inja miad");
     int a = access(fileName,F_OK);
 //    printf("%d",a);
     if (a == 0) { //it means that it exists
@@ -177,7 +188,8 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
             getStr(fileName);
         }
         else if (counterGlobRemoveStr == 1 || counterGlobCopyStr == 1 ||
-                 counterGlobCutStr == 1) {
+                 counterGlobCutStr == 1 || counterGlobPaste == 1) {
+//            printf("inja miad");
             removeStrPoseSize(fileName);
         }
         else if (counterGlobcat == 1) {
@@ -189,7 +201,7 @@ void isFileExists(char fileName[]) { // here if you faced bug it is probably bec
     }
     else { //the file doesn't exists
         if (counterGlobInsertstr == 1 || counterGlobRemoveStr == 1 || counterGlobcat == 1 ||
-            counterGlobCopyStr == 1 || counterGlobCutStr == 1) //i 'm not sure about cat in this condition think about it later on
+            counterGlobCopyStr == 1 || counterGlobCutStr == 1 || counterGlobPaste == 1) //i 'm not sure about cat in this condition think about it later on
             printf("The file doesn't exist"); //later add exit or return 0 after this line of code.
         else
             fileCreator(fileName);
@@ -311,7 +323,7 @@ void insertString(char arr[],char fileName[],int len) {
         c = fgetc(original);
         if (c == '\n') {
             counterCol++;
-            if (counterRow == row && col > counterRow){
+            if (counterRow == row && col > counterCol){
                 printf("Out of index"); // you have to implement this part of code to
                 exit(0);                 //similar parts as well.
             }
@@ -319,9 +331,11 @@ void insertString(char arr[],char fileName[],int len) {
             counterChar += counterCol;
             counterCol = 0;
         }
-        if (counterRow < row) {
-            printf("out of index");
-            exit(0);
+        if (c == EOF) {
+            if (counterRow < row) {  // good improvements here is made that needs to be implemented on other parts as well
+                printf("out of index");
+                exit(0);
+            }
         }
         else if (c != '\n' && c != EOF) {
             counterCol++;
@@ -348,10 +362,15 @@ void insertString(char arr[],char fileName[],int len) {
         }
         counterGeneral++;
         if (counterGeneral == counterChar) {
-            fputc(c,insert);
+            if (counterChar != 0) {
+                fputc(c, insert);
+            }
             for (int i = 0; i < len; i++) {
                 fputc(arr[i],insert);
                 counterGeneral++;
+            }
+            if (counterChar == 0) {
+                fputc(c,insert);
             }
             c = fgetc(original);
         }
@@ -362,7 +381,7 @@ void insertString(char arr[],char fileName[],int len) {
     }
     fclose(original);
     fclose(insert);
-    remove(original);
+    remove(fileName);
     rename(temp,fileName);
 }
 
@@ -386,6 +405,7 @@ void catReadFile(char fileName[]) {
 }
 
 void removeStrPoseSize(char fileName[]) {
+//    printf("inja miad");
     char c;
     char flag;
     int row = 0, col = 0, size = 0, counterSpace = 0, counterSpace2 = 0;
@@ -397,9 +417,22 @@ void removeStrPoseSize(char fileName[]) {
         if (c == ' ') { // also test this part when '\"' comes to the game.
             counterSpace++;
         }
-        if (c == ' ' && counterSpace == 2) {
-            scanf("%d%c%d",&row,&c,&col);
-            break;
+        if (counterGlobPaste == 0) {
+            if (c == ' ' && counterSpace == 2) {
+                scanf("%d%c%d", &row, &c, &col);
+                break;
+            }
+        }
+        else if (counterGlobPaste == 1) {
+            if (c == ' ' && counterSpace == 2) { // this part of code should be restored to the previous part
+                scanf("%d%c%d",&row, &c, &col); // it is redundant
+                // call the relevant function
+                //give the relevant data to them
+                //one of them is insertstr
+                // the other is copy or cut strl
+                pasteStr(col,row,fileName);
+                exit(0);
+            }
         }
     }
     while (1) {
@@ -421,6 +454,7 @@ void removeStrPoseSize(char fileName[]) {
 
 void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
 //    printf("the row valus is: %d\n",row);
+    counterGlobForPasteSize == size;
     int counterGeneral = 0;
     int counterGeneral2 = 0;
     int j = 0, counterRow = 1, counterCol = 0, counterChar = 0;
@@ -441,11 +475,21 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
         c = fgetc(original);
         if (c == '\n') {
             counterCol++;
+            if (counterRow == row && col > counterRow) {
+                printf("out of index");
+                exit(0);
+            }
             counterRow++;
             counterChar += counterCol;//This part of code is prone to bug be careful and think more if needed
 //            printf("%d\n",counterChar);
 //            printf("%d\n",counterRow);
             counterCol = 0;
+        }
+        if (c == EOF) {
+            if (counterRow < row) {
+                printf("out of index");
+                exit(0);
+            }
         }
         else if(c != '\n' && c != EOF) { //why is it always true? dubious
             counterCol++;
@@ -472,7 +516,7 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
 //    fseek(original,0,SEEK_END);
 //    printf("%ld\n",ftell(original));
 //    rewind(original);
-    printf("inja miad\n");
+//    printf("inja miad\n");
     while (1) {
 //        printf("miyad");
 //        printf("inja miad");
@@ -621,5 +665,96 @@ void removingTheStr(int col,int row,int size,char flag,char fileName[]) {
         rename(temp, fileName);
     }
 }
+
+void pasteStr(int col,int row,char fileName[]) {
+    int counterRow = 1, counterCol = 0, counterChar = 0;
+//    printf("inja miad");
+    int counter = 0;
+    char c;
+    char hold;
+//    printf("%d %d",row ,col);
+    char *temp = "temp.txt";
+    char *clipboard = ".copy.txt";
+    FILE *original;
+    FILE *paste;
+    FILE *insert;
+    paste = fopen(clipboard, "r");// clipboard which we want to read from
+    original = fopen(fileName,"r"); // the file we want to insert from the clipboard
+    insert = fopen(temp,"w");
+    if (original == NULL || paste == NULL || insert == NULL) {
+        printf("unable to open the file");
+
+    }
+    while (1) {
+        c = fgetc(original);
+        if (c == '\n') {
+            counterCol++;
+            if (counterRow == row && col > counterCol){
+                printf("col Out of index"); // you have to implement this part of code to
+                exit(0);                 //similar parts as well.
+            }
+            counterRow++;
+            counterChar += counterCol;
+            counterCol = 0;
+        }
+        if (c == EOF) { // this part of code added here and in insert and also should be added in copy and cut
+            if (counterRow < row) {
+                printf("row out of index");
+                exit(0);
+            }
+        }
+        else if (c != '\n' && c != EOF) {
+            counterCol++;
+        }
+        if (col != 0) {
+            if (counterCol == col && counterRow == row) {
+                counterChar += col;
+//                printf("inja miyad");
+                break;
+            }
+        }
+        else if (col == 0) {
+            if (counterRow == row) {
+                break;
+            }
+        }
+    }
+    rewind(original);
+    int counterGeneral = 0;
+    while(1) {
+        c = fgetc(original);
+        if (counterChar == 0) {
+            counterGeneral--;
+        }
+        counterGeneral++;
+        if (counterGeneral == counterChar) {
+            if (counterChar != 0) { // this part of code added here and in insert command
+                fputc(c, insert);
+            }
+            hold = c;
+            for (int i = 0; c != EOF; i++) {
+                c = fgetc(paste);
+                if (c != EOF) {
+                    fputc(c, insert);
+                }
+                counterGeneral++;
+            }
+            if (counterChar == 0) {// this part of code added here and in insert command
+                fputc(hold,insert);
+            }
+            c = fgetc(original);
+        }
+        if (c == EOF) {
+            break;
+        }
+        fputc(c,insert);
+    }
+    fclose(original);
+    fclose(paste);
+    fclose(insert);
+    remove(fileName);
+    rename(temp,fileName);
+}
+
 
 
