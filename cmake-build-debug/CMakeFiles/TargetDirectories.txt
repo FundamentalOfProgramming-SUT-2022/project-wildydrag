@@ -1,3 +1,0 @@
-/home/emad/root/project-wildydrag/cmake-build-debug/CMakeFiles/root.dir
-/home/emad/root/project-wildydrag/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/emad/root/project-wildydrag/cmake-build-debug/CMakeFiles/rebuild_cache.dir
